@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -10,7 +10,7 @@ from app.services.user_service import get_current_user
 from database import get_db
 
 notes_router = APIRouter()
-@notes_router.post("/notes/", response_model=NoteInDB)
+@notes_router.post("/notes/", response_model=NoteInDB, status_code=status.HTTP_201_CREATED)
 async def create_note(note: NoteCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     new_note = NoteORM(
         title=note.title,
@@ -112,8 +112,9 @@ async def delete_note(note_id: int, db: AsyncSession = Depends(get_db), current_
     await db.commit()
     return note
 
-@notes_router.get("/notes/search/", response_model=List[NoteInDB])
+@notes_router.post("/notes/search/", response_model=List[NoteInDB])
 async def search_notes_by_tags(tags: List[TagBase], db: AsyncSession = Depends(get_db)):
+    print(tags)
     if not tags:
         raise HTTPException(status_code=400, detail="At least one tag must be provided")
 
