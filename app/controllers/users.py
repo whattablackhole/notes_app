@@ -1,11 +1,11 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from app.models import  User
 from app.schemas import UserCreate, UserResponse, Token
-from database import get_db
+from app.database import get_db
 from passlib.context import CryptContext
 from app.config import settings
 

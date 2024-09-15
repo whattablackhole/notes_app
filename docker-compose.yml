@@ -1,0 +1,55 @@
+services:
+  notes_app:
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+    container_name: fastapi-app
+    ports:
+      - "8005:8005"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql+asyncpg://postgres:admin@postgres/notes_db"
+      ALEMBIC_DATABASE_URL: "postgresql://postgres:admin@postgres/notes_db"
+    volumes:
+      - .:/app
+    networks:
+      - postgres_network
+  notes_keeper_bot:
+    build: 
+      context: ./telegram_bot/
+      dockerfile: Dockerfile
+    environment:
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - API_BASE_URL=http://notes_app:8005
+    restart: always
+    networks:
+      - app_network
+  postgres:
+    image: postgres:14
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: notes_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./init_db/init_db.sh:/docker-entrypoint-initdb.d/init_db.sh
+    networks:
+      - postgres_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d notes_db"]
+      interval: 10s
+      retries: 5
+      start_period: 10s
+      timeout: 5s
+networks:
+  postgres_network:
+    driver: bridge
+  app_network:
+    driver: bridge
+volumes:
+  postgres_data:

@@ -10,9 +10,10 @@ from handlers.notes import register_note_handlers
 from aiogram.filters import Command
 from aiogram.fsm.middleware import FSMContextMiddleware
 from aiogram.fsm.storage.memory import DisabledEventIsolation, MemoryStorage
+
 dotenv.load_dotenv()
 
-API_BASE_URL = "http://127.0.0.1:8000"
+API_BASE_URL = os.getenv("API_BASE_URL")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN")
 
 bot = Bot(token=TELEGRAM_TOKEN)
@@ -46,6 +47,8 @@ async def help_command(message: Message):
 
 
 async def main():
+    print("Running telegram bot...")
+
     async with aiohttp.ClientSession() as session:
         await setup_handlers(session)
         await dp.start_polling(bot)

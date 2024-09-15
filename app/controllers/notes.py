@@ -7,7 +7,7 @@ from typing import List
 from app.models import NoteORM, Tag, User
 from app.schemas import NoteCreate, NoteUpdate, NoteInDB, TagBase
 from app.services.user_service import get_current_user
-from database import get_db
+from app.database import get_db
 
 notes_router = APIRouter()
 @notes_router.post("/notes/", response_model=NoteInDB, status_code=status.HTTP_201_CREATED)

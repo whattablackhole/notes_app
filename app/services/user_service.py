@@ -5,7 +5,7 @@ from app.models import User
 from app.utils.jwt import decode_jwt_token
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from database import get_db
+from app.database import get_db
 
 
 async def get_user_from_token(db: AsyncSession, token: str) -> User:
@@ -35,7 +35,7 @@ async def get_current_user(request: Request, db: AsyncSession = Depends(get_db))
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization header missing")
     
     token = auth_string[1]
-    
+
     user = await get_user_from_token(db, token)
     
     return user

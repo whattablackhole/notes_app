@@ -1,4 +1,5 @@
 from logging.config import fileConfig
+import os
 from sqlalchemy import create_engine, pool
 from app.models import Base  # Import your models' Base
 
@@ -7,9 +8,15 @@ from alembic import context
 # Alembic Config object
 config = context.config
 
+DATABASE_URL = os.getenv('ALEMBIC_DATABASE_URL', 'postgresql://postgres:password@localhost:5432/notes_db')
+
 # Interpret the config file for Python logging.
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
+
+
+config.set_main_option('sqlalchemy.url', DATABASE_URL)
+
 
 # Add your model's MetaData object here for 'autogenerate' support
 target_metadata = Base.metadata

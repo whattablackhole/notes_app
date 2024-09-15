@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from database import init_db
+from app.database import init_db
 from app.controllers.notes import notes_router
 from app.controllers.users import users_router
 
