@@ -1,22 +1,25 @@
 from pydantic import BaseModel
-from typing import Optional
+from typing import List, Optional
 from datetime import datetime
+
+class TagBase(BaseModel):
+    name: str
 
 class NoteBase(BaseModel):
     title: str
     content: str
-    tags: Optional[str] = None
 
 class NoteCreate(NoteBase):
-    pass
+    tags: Optional[List[TagBase]]
 
 class NoteUpdate(NoteBase):
-    pass
+    tags: Optional[List[TagBase]]
 
 class NoteInDB(NoteBase):
     id: int
     created_at: datetime
     updated_at: datetime
+    tags: Optional[List[TagBase]]
 
     class Config:
         orm_mode = True
