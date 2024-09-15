@@ -46,7 +46,6 @@ def setup_logging():
 logger = setup_logging()
 
 
-from fastapi import HTTPException
 
 # Global error handling for general exceptions
 @app.exception_handler(Exception)
