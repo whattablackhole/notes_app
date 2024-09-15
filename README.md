@@ -1,22 +1,23 @@
 # notes_app
 Used technologies:
-fastapi
-uvicorn
-sqlalchemy
-alembic
-asyncpg
-passlib
-python-jose
-python-dotenv
-pydantic_settings
-pydantic
-PyJWT
-psycopg2-binary
-slowapi
-aiohttp
-aiogram
-aiogram_middlewares
-
+- fastapi
+- uvicorn
+- sqlalchemy
+- alembic
+- asyncpg
+- passlib
+- python-jose
+- python-dotenv
+- pydantic_settings
+- pydantic
+- PyJWT
+- psycopg2-binary
+- slowapi
+- aiohttp
+- aiogram
+- aiogram_middlewares
+- postgres
+- docker
 
 To run the application:
 1. Clone repo
