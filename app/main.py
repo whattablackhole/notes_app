@@ -1,6 +1,7 @@
 from fastapi import FastAPI
 from database import init_db
-from app.controllers import router
+from app.controllers.notes import notes_router
+from app.controllers.users import users_router
 
 async def lifespan(app: FastAPI):
     await init_db()
@@ -9,7 +10,9 @@ async def lifespan(app: FastAPI):
     
 app = FastAPI(lifespan=lifespan)
 
-app.include_router(router)
+app.include_router(users_router, prefix="/users", tags=["users"])
+app.include_router(notes_router)
+
 
 if __name__ == "__main__":
     import uvicorn
