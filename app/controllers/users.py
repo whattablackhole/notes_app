@@ -1,5 +1,5 @@
 from datetime import datetime, timedelta
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 import jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
@@ -8,6 +8,9 @@ from app.schemas import UserCreate, UserResponse, Token
 from app.database import get_db
 from passlib.context import CryptContext
 from app.config import settings
+from app.limiter import limiter
+
+
 
 users_router = APIRouter()
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
@@ -29,8 +32,9 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, settings.secret_key, algorithm=settings.algorithm)
     return encoded_jwt
 
+@limiter.limit("10/minute")
 @users_router.post("/register/", response_model=UserResponse)
-async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
+async def register_user(user: UserCreate, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).filter(User.username == user.username))
     existing_user = result.scalar_one_or_none()
     
@@ -43,8 +47,9 @@ async def register_user(user: UserCreate, db: AsyncSession = Depends(get_db)):
     await db.commit()
     return db_user
 
+@limiter.limit("20/minute")
 @users_router.post("/token/", response_model=Token)
-async def login(user: UserCreate, db: AsyncSession = Depends(get_db)):
+async def login(user: UserCreate, request: Request, db: AsyncSession = Depends(get_db)):
     result = await db.execute(select(User).filter(User.username == user.username))
     db_user = result.scalar_one_or_none()
     

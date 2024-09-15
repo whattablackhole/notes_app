@@ -16,6 +16,7 @@ services:
       - .:/app
     networks:
       - postgres_network
+      - app_network
   notes_keeper_bot:
     build: 
       context: ./telegram_bot/

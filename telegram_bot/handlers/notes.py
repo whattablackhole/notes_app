@@ -109,7 +109,7 @@ async def process_tags(message: Message, state: FSMContext, token_list: dict):
 
     async with aiohttp.ClientSession() as session:
         async with session.post(f"{API_BASE_URL}/notes/", json=note_data, headers=headers) as resp:
-            if resp.status == 200:
+            if resp.status == 201:
                 await message.reply("Note created successfully!")
             else:
                 await message.reply("Failed to create note.")

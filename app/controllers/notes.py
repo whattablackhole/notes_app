@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from sqlalchemy.orm import selectinload
@@ -8,10 +8,16 @@ from app.models import NoteORM, Tag, User
 from app.schemas import NoteCreate, NoteUpdate, NoteInDB, TagBase
 from app.services.user_service import get_current_user
 from app.database import get_db
+from app.limiter import limiter
+
 
 notes_router = APIRouter()
+
+
+@limiter.limit("100/minute")
 @notes_router.post("/notes/", response_model=NoteInDB, status_code=status.HTTP_201_CREATED)
-async def create_note(note: NoteCreate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def create_note(note: NoteCreate,request: Request, 
+ db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     new_note = NoteORM(
         title=note.title,
         content=note.content,
@@ -42,24 +48,28 @@ async def create_note(note: NoteCreate, db: AsyncSession = Depends(get_db), curr
     
     return new_note
 
+@limiter.limit("100/minute")
 @notes_router.get("/notes/{note_id}", response_model=NoteInDB)
-async def read_note(note_id: int, db: AsyncSession = Depends(get_db)):
+async def read_note(note_id: int, request: Request, db: AsyncSession = Depends(get_db)):
     query = await db.execute(select(NoteORM).options(selectinload(NoteORM.tags)).where(NoteORM.id == note_id))
     note = query.scalars().first()
     if not note:
         raise HTTPException(status_code=404, detail="Note not found")
     return note
 
+
+@limiter.limit("100/minute")
 @notes_router.get("/notes/", response_model=List[NoteInDB])
-async def read_notes(skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
+async def read_notes(request: Request, skip: int = 0, limit: int = 10, db: AsyncSession = Depends(get_db)):
     query = await db.execute(
         select(NoteORM).options(selectinload(NoteORM.tags)).offset(skip).limit(limit)
     )
     notes = query.scalars().all()
     return notes
 
+@limiter.limit("5/minute")
 @notes_router.put("/notes/{note_id}", response_model=NoteInDB)
-async def update_note(note_id: int, updated_note: NoteUpdate, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def update_note(note_id: int, updated_note: NoteUpdate,request: Request, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     query = await db.execute(
         select(NoteORM).options(selectinload(NoteORM.tags)).where(NoteORM.id == note_id)
     )
@@ -96,8 +106,9 @@ async def update_note(note_id: int, updated_note: NoteUpdate, db: AsyncSession =
     await db.refresh(note)
     return note
 
+@limiter.limit("10/minute")
 @notes_router.delete("/notes/{note_id}", response_model=NoteInDB)
-async def delete_note(note_id: int, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
+async def delete_note(note_id: int,request: Request, db: AsyncSession = Depends(get_db), current_user: User = Depends(get_current_user)):
     query = await db.execute(
         select(NoteORM).options(selectinload(NoteORM.tags)).where(NoteORM.id == note_id)
     )
@@ -112,8 +123,9 @@ async def delete_note(note_id: int, db: AsyncSession = Depends(get_db), current_
     await db.commit()
     return note
 
+@limiter.limit("50/minute")
 @notes_router.post("/notes/search/", response_model=List[NoteInDB])
-async def search_notes_by_tags(tags: List[TagBase], db: AsyncSession = Depends(get_db)):
+async def search_notes_by_tags(tags: List[TagBase], request: Request, db: AsyncSession = Depends(get_db)):
     print(tags)
     if not tags:
         raise HTTPException(status_code=400, detail="At least one tag must be provided")

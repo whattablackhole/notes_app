@@ -19,6 +19,7 @@ async def login(message: Message, user_tokens: dict):
                 await message.reply("Logged in successfully! Here are the available commands:\n"
                                     "/notes - Get a list of your notes\n"
                                     "/create_note - Start creating a new note\n"
+                                    "/search_by_tags - Start searching notes related by tags\n"
                                     "/help - List available commands")
             else:
                 await message.reply("Login failed! Please check your credentials.")
